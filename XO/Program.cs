@@ -30,8 +30,9 @@ namespace XO
         {
             string raw_cell;
             int cell;
-            if (num == 1) Console.Write(PlayerName1);
-            else Console.Write(PlayerName2);
+
+            Console.Write(GetCurrentPlayer(num));
+
             do
             {
                 Console.Write(",введите номер ячейки,сделайте свой ход:");
@@ -39,7 +40,7 @@ namespace XO
                 raw_cell = Console.ReadLine();
             }
             while (!Int32.TryParse(raw_cell, out cell));
-            while (cell > 9 || cell < 1 || cells[cell - 1] == 'O' || cells[cell - 1] == 'X')
+            while (CantMove(cell))
             {
                 do
                 {
@@ -49,29 +50,23 @@ namespace XO
                 while (!Int32.TryParse(raw_cell, out cell));
                 Console.WriteLine();
             }
-            if (num == 1) cells[cell - 1] = 'X';
-            else cells[cell - 1] = 'O';
-            
+
+            cells[cell - 1] = GetCellSymbol(num);
         }
+
         static char check()
         {
             for (int i = 0; i < 3; i++)
-                if (cells[i * 3] == cells[i * 3 + 1] && cells[i * 3 + 1] == cells[i * 3 + 2])
-                    return cells[i];
-                else if (cells[i] == cells[i + 3] && cells[i + 3] == cells[i + 6])
-                    return cells[i];
-                else if ((cells[2] == cells[4] && cells[4] == cells[6]) || (cells[0] == cells[4] && cells[4] == cells[8]))
-                    return cells[i];
+            {
+                if (HasWin(i)) return cells[i];
+            }
+
             return '-';
         }
 
         static void result()
         {
-            if (win == 'X')
-                Console.WriteLine($"{PlayerName1} вы  выиграли поздравляем {PlayerName2} а вы проиграли...");
-            else if (win == 'O')
-                Console.WriteLine($"{PlayerName2} вы  выиграли поздравляем {PlayerName1} а вы проиграли...");
-
+            Console.WriteLine($"{GetWinner()} вы  выиграли поздравляем {GetLoser()} а вы проиграли...");
         }
 
         static void Main(string[] args)
@@ -90,8 +85,7 @@ namespace XO
 
             for (int move = 1; move <= 9; move++)
             {
-                if (move % 2 != 0) make_move(1);
-                else make_move(2);
+                make_move(GetPlayerTurn(move));
 
                 show_cells();
 
@@ -105,6 +99,55 @@ namespace XO
             }
 
             result();
+        }
+
+        private static int GetPlayerTurn(int move)
+        {
+            return move % 2 != 0 ? 1 : 2;
+        }
+
+        private static string GetWinner()
+        {
+            return win == 'X' ? PlayerName1 : PlayerName2;
+        }
+
+        private static string GetLoser()
+        {
+            return win == 'X' ? PlayerName2 : PlayerName1;
+        }
+
+        private static bool HasWin(int i)
+        {
+            return HasHorizontalWin(i) || HasVarticalWin(i) || HasDiagonalWin();
+        }
+
+        private static bool HasDiagonalWin()
+        {
+            return (cells[2] == cells[4] && cells[4] == cells[6]) || (cells[0] == cells[4] && cells[4] == cells[8]);
+        }
+        private static bool HasVarticalWin(int i)
+        {
+            return cells[i] == cells[i + 3] && cells[i + 3] == cells[i + 6];
+        }
+
+        private static bool HasHorizontalWin(int i)
+        {
+            return cells[i * 3] == cells[i * 3 + 1] && cells[i * 3 + 1] == cells[i * 3 + 2];
+        }
+
+        private static char GetCellSymbol(int num)
+        {
+            return num == 1 ? 'X' : 'O';
+        }
+
+        private static string GetCurrentPlayer(int num)
+        {
+            return num == 1 ? PlayerName1 : PlayerName2;
+        }
+
+        private static bool CantMove(int cell)
+        {
+            return cell > 9 || cell < 1 || cells[cell - 1] == 'O' || cells[cell - 1] == 'X';
         }
     }
 }
